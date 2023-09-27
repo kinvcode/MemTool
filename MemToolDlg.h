@@ -25,7 +25,13 @@ protected:
 	void initListCtr();
 	void initCheckBoxs();
 	void initComboxs();
+	// 插入一行数据
 	void insertRowData(int row, CString addr, CString pointer, CString int_str, CString long_str, CString float_str, CString double_str, CString str, CString res);
+	// 检查递增选项是否合法
+	bool checkIncSel(int cur);
+	// 根据递增索引获取数值
+	int getIncByIndex(int index);
+
 	// 实现
 protected:
 	HICON m_hIcon;

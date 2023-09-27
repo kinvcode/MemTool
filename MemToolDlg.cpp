@@ -361,8 +361,6 @@ void CMemToolDlg::OnBnClickedButton1()
 	pid_str.Format(_T("%d"), pid);
 	m_pid.SetWindowText(pid_str);
 
-	// 组合地址
-
 
 	CString base_address_num;
 	m_base_addr.GetWindowText(base_address_num);
@@ -371,78 +369,6 @@ void CMemToolDlg::OnBnClickedButton1()
 	if (!base_address) {
 		MessageBox(L"基址不能为空");
 		return;
-	}
-
-	bool offset1_exists = true,
-		offset2_exists = true,
-		offset3_exists = true,
-		offset4_exists = true,
-		offset5_exists = true,
-		offset6_exists = true,
-		offset7_exists = true,
-		offset8_exists = true,
-		offset9_exists = true,
-		offset10_exists = true;
-
-	CString offset1_str;
-	m_offset1.GetWindowText(offset1_str);
-	if (offset1_str.IsEmpty()) {
-		// 读取基址
-		offset1_exists = false;
-	}
-
-	CString offset2_str;
-	m_offset2.GetWindowText(offset2_str);
-	if (offset2_str.IsEmpty()) {
-		offset2_exists = false;
-	}
-
-	CString offset3_str;
-	m_offset3.GetWindowText(offset3_str);
-	if (offset3_str.IsEmpty()) {
-		offset3_exists = false;
-	}
-
-	CString offset4_str;
-	m_offset4.GetWindowText(offset4_str);
-	if (offset4_str.IsEmpty()) {
-		offset4_exists = false;
-	}
-
-	CString offset5_str;
-	m_offset5.GetWindowText(offset5_str);
-	if (offset5_str.IsEmpty()) {
-		offset5_exists = false;
-	}
-
-	CString offset6_str;
-	m_offset6.GetWindowText(offset6_str);
-	if (offset6_str.IsEmpty()) {
-		offset6_exists = false;
-	}
-
-	CString offset7_str;
-	m_offset7.GetWindowText(offset7_str);
-	if (offset7_str.IsEmpty()) {
-		offset7_exists = false;
-	}
-
-	CString offset8_str;
-	m_offset8.GetWindowText(offset8_str);
-	if (offset8_str.IsEmpty()) {
-		offset8_exists = false;
-	}
-
-	CString offset9_str;
-	m_offset9.GetWindowText(offset9_str);
-	if (offset9_str.IsEmpty()) {
-		offset9_exists = false;
-	}
-
-	CString offset10_str;
-	m_offset10.GetWindowText(offset10_str);
-	if (offset10_str.IsEmpty()) {
-		offset10_exists = false;
 	}
 
 	HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
@@ -455,58 +381,228 @@ void CMemToolDlg::OnBnClickedButton1()
 	// 一层循环
 	if (m_checkbox1.GetCheck()) {
 		// 循环次数
+
+		// 获取循环次数
+
+
+		CString loop1_str, inc1_str;
+		m_loop1.GetWindowText(loop1_str);
+		m_inc1.GetWindowText(inc1_str);
+		if (loop1_str.IsEmpty()) {
+			MessageBox(L"一级遍历循环次数未填写");
+			return;
+		}
+		if (inc1_str.IsEmpty()) {
+			MessageBox(L"一级遍历递增数值未填写");
+			return;
+		}
+
+		int loop1_num = _wtoi(loop1_str);
+		int inc1_num = _wtoi(inc1_str);
+
+		if (loop1_num <= 0) {
+			MessageBox(L"一级遍历循环次数必须大于0");
+			return;
+		}
+		if (inc1_num <= 0) {
+			MessageBox(L"一级遍历递增数值必须大于0");
+			return;
+		}
+
+		// 获取递增选项
+		int sel1_num = m_combo1.GetCurSel();
+		// 所有偏移都需要检查一遍
+		if (!checkIncSel(1)) {
+			MessageBox(L"偏移数值或基址未填写");
+			return;
+		}
+
+		int loop1_inc_item = getIncByIndex(sel1_num);
+		for (int loop1_index = 0; loop1_index < loop1_num; loop1_index++)
+		{
+
+			// 处理二级遍历
+
+		}
+
+
 	}
 	else {
 		// 没有循环，只读取一次地址
 
-		// 先读基址
+		CString th_addr; // 寻址地址字符串
+		__int64 tmp_pointer; // 当前地址存放的指针
+		__int64 cur_address = base_address; // 当前搜索的地址
 
-		// 获取指针
-
-		// 判断一级偏移
-		if (offset1_exists) {
+		// 处理一级偏移
+		CString offset1_str;
+		m_offset1.GetWindowText(offset1_str);
+		if (!offset1_str.IsEmpty()) {
+			int offset1_num = wcstoul(offset1_str, NULL, 16);
 			// 获取指针
+			tmp_pointer = readLong(handle, cur_address);
+			cur_address = tmp_pointer;
+			tmp_pointer = readLong(handle, cur_address + offset1_num);
+
+			// 处理二级偏移
+			CString offset2_str;
+			m_offset2.GetWindowText(offset2_str);
+			if (!offset2_str.IsEmpty()) {
+				int offset2_num = wcstoul(offset2_str, NULL, 16);
+				cur_address = tmp_pointer;
+				tmp_pointer = readLong(handle, cur_address + offset2_num);
+
+				// 处理三级偏移
+				CString offset3_str;
+				m_offset3.GetWindowText(offset3_str);
+				if (!offset3_str.IsEmpty()) {
+					int offset3_num = wcstoul(offset3_str, NULL, 16);
+					cur_address = tmp_pointer;
+					tmp_pointer = readLong(handle, cur_address + offset3_num);
+
+					// 处理四级偏移
+					CString offset4_str;
+					m_offset4.GetWindowText(offset4_str);
+					if (!offset4_str.IsEmpty()) {
+						int offset4_num = wcstoul(offset4_str, NULL, 16);
+						cur_address = tmp_pointer;
+						tmp_pointer = readLong(handle, cur_address + offset4_num);
+
+						// 处理五级偏移
+						CString offset5_str;
+						m_offset5.GetWindowText(offset5_str);
+						if (!offset5_str.IsEmpty()) {
+							int offset5_num = wcstoul(offset5_str, NULL, 16);
+							cur_address = tmp_pointer;
+							tmp_pointer = readLong(handle, cur_address + offset5_num);
+
+							// 处理六级偏移
+							CString offset6_str;
+							m_offset6.GetWindowText(offset6_str);
+							if (!offset6_str.IsEmpty()) {
+								int offset6_num = wcstoul(offset6_str, NULL, 16);
+								cur_address = tmp_pointer;
+								tmp_pointer = readLong(handle, cur_address + offset6_num);
+
+								// 处理七级偏移
+								CString offset7_str;
+								m_offset7.GetWindowText(offset7_str);
+								if (!offset7_str.IsEmpty()) {
+									int offset7_num = wcstoul(offset7_str, NULL, 16);
+									cur_address = tmp_pointer;
+									tmp_pointer = readLong(handle, cur_address + offset7_num);
+
+									// 处理八级偏移
+									CString offset8_str;
+									m_offset8.GetWindowText(offset8_str);
+									if (!offset8_str.IsEmpty()) {
+										int offset8_num = wcstoul(offset8_str, NULL, 16);
+										cur_address = tmp_pointer;
+										tmp_pointer = readLong(handle, cur_address + offset8_num);
+
+										// 处理九级偏移
+										CString offset9_str;
+										m_offset9.GetWindowText(offset9_str);
+										if (!offset9_str.IsEmpty()) {
+											int offset9_num = wcstoul(offset9_str, NULL, 16);
+											cur_address = tmp_pointer;
+											tmp_pointer = readLong(handle, cur_address + offset9_num);
+
+											// 处理十级偏移
+											CString offset10_str;
+											m_offset10.GetWindowText(offset10_str);
+											if (!offset10_str.IsEmpty()) {
+												int	offset10_num = wcstoul(offset10_str, NULL, 16);
+												cur_address = tmp_pointer;
+												tmp_pointer = readLong(handle, cur_address + offset10_num);
+												// 拼接地址（10级偏移）
+												th_addr.Format(L"[[[[[[[[[[[%llX]+%X]+%X]+%X]+%X]+%X]+%X]+%X]+%X]+%X]+%X]", base_address, offset1_num, offset2_num, offset3_num, offset4_num, offset5_num, offset6_num, offset7_num, offset8_num, offset9_num, offset10_num);
+											}
+											else {
+												// 拼接地址（九级偏移）
+												th_addr.Format(L"[[[[[[[[[[%llX]+%X]+%X]+%X]+%X]+%X]+%X]+%X]+%X]+%X]", base_address, offset1_num, offset2_num, offset3_num, offset4_num, offset5_num, offset6_num, offset7_num, offset8_num, offset9_num);
+											}
+										}
+										else {
+											// 拼接地址（八级偏移）
+											th_addr.Format(L"[[[[[[[[[%llX]+%X]+%X]+%X]+%X]+%X]+%X]+%X]+%X]", base_address, offset1_num, offset2_num, offset3_num, offset4_num, offset5_num, offset6_num, offset7_num, offset8_num);
+										}
+									}
+									else {
+										// 拼接地址（七级偏移）
+										th_addr.Format(L"[[[[[[[[%llX]+%X]+%X]+%X]+%X]+%X]+%X]+%X]", base_address, offset1_num, offset2_num, offset3_num, offset4_num, offset5_num, offset6_num, offset7_num);
+									}
+								}
+								else {
+									// 拼接地址（六级偏移）
+									th_addr.Format(L"[[[[[[[%llX]+%X]+%X]+%X]+%X]+%X]+%X]", base_address, offset1_num, offset2_num, offset3_num, offset4_num, offset5_num, offset6_num);
+								}
+							}
+							else {
+								// 拼接地址（五级偏移）
+								th_addr.Format(L"[[[[[[%llX]+%X]+%X]+%X]+%X]+%X]", base_address, offset1_num, offset2_num, offset3_num, offset4_num, offset5_num);
+							}
+						}
+						else {
+							// 拼接地址（四级偏移）
+							th_addr.Format(L"[[[[[%llX]+%X]+%X]+%X]+%X]", base_address, offset1_num, offset2_num, offset3_num, offset4_num);
+						}
+					}
+					else {
+						// 拼接地址（三级偏移）
+						th_addr.Format(L"[[[[%llX]+%X]+%X]+%X]", base_address, offset1_num, offset2_num, offset3_num);
+					}
+				}
+				else {
+					// 拼接地址(二级偏移)
+					th_addr.Format(L"[[[%llX]+%X]+%X]", base_address, offset1_num, offset2_num);
+				}
+			}
+			else {
+				// 拼接地址(一级偏移)
+				th_addr.Format(L"[[%llX]+%X]", base_address, offset1_num);
+			}
 		}
 		else {
-			// 获取数据
-			// 拼接地址
-			CString th_addr;
-			th_addr.Format(L"[%llX]", base_address);
-
 			// 获取指针
-			__int64 tmp_pointer = readLong(handle, base_address);
-			CString pointer_str;
-			pointer_str.Format(L"%llX", tmp_pointer);
+			tmp_pointer = readLong(handle, cur_address);
 
-			// 获取整数
-			int tmp_int = readInt(handle, base_address);
-			CString int_str;
-			int_str.Format(L"%d", tmp_int);
-
-			// 获取长整数
-			CString long_str;
-			long_str.Format(L"%lld", tmp_pointer);
-
-			// 获取小数
-			float tmp_float = readFloat(handle, base_address);
-			CString float_str;
-			float_str.Format(L"%f", tmp_float);
-
-			// 获取双精度浮点
-			double tmp_double = readDouble(handle, base_address);
-			CString double_str;
-			double_str.Format(L"%f", tmp_double);
-
-			// 获取字符串
-			CString tmp_str = readCString(handle, tmp_pointer, 50);
-
-			// 解密整型
-			int tmp_res = readInt(handle, tmp_pointer);
-			CString res;
-			res.Format(L"%d", tmp_res);
-			insertRowData(0, th_addr, pointer_str, int_str, long_str, float_str, double_str, tmp_str, res);
-
+			// 拼接地址
+			th_addr.Format(L"[%llX]", base_address);
 		}
+
+		CString pointer_str;
+		pointer_str.Format(L"%llX", tmp_pointer);
+
+		// 获取整数
+		int tmp_int = readInt(handle, cur_address);
+		CString int_str;
+		int_str.Format(L"%d", tmp_int);
+
+		// 获取长整数
+		CString long_str;
+		long_str.Format(L"%lld", tmp_pointer);
+
+		// 获取小数
+		float tmp_float = readFloat(handle, cur_address);
+		CString float_str;
+		float_str.Format(L"%G", tmp_float);
+
+		// 获取双精度浮点
+		double tmp_double = readDouble(handle, cur_address);
+		CString double_str;
+		double_str.Format(L"%G", tmp_double);
+
+		// 获取字符串
+		CString tmp_str = readCString(handle, tmp_pointer, 50);
+
+		// 解密整型
+		int tmp_res = readInt(handle, tmp_pointer);
+		CString res;
+		res.Format(L"%d", tmp_res);
+
+		insertRowData(0, th_addr, pointer_str, int_str, long_str, float_str, double_str, tmp_str, res);
+
 	}
 }
 
@@ -540,4 +636,213 @@ void CMemToolDlg::insertRowData(
 	m_list.SetItemText(row, 5, double_str);
 	m_list.SetItemText(row, 6, str);
 	m_list.SetItemText(row, 7, res);
+}
+
+bool CMemToolDlg::checkIncSel(int cur)
+{
+
+	for (int i = 10; i >= 0; i--)
+	{
+		// 如果选择的递增选项小于本层循环的递增选项，则跳过本层递增选项
+		if (cur < i) {
+			continue;
+		}
+
+		switch (i)
+		{
+		case 10:
+		{
+			CString offset10_str;
+			m_offset10.GetWindowText(offset10_str);
+			if (offset10_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 9:
+		{
+			CString offset9_str;
+			m_offset9.GetWindowText(offset9_str);
+			if (offset9_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 8:
+		{
+			CString offset8_str;
+			m_offset8.GetWindowText(offset8_str);
+			if (offset8_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 7:
+		{
+			CString offset7_str;
+			m_offset7.GetWindowText(offset7_str);
+			if (offset7_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 6:
+		{
+			CString offset6_str;
+			m_offset6.GetWindowText(offset6_str);
+			if (offset6_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 5:
+		{
+			CString offset5_str;
+			m_offset5.GetWindowText(offset5_str);
+			if (offset5_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 4:
+		{
+			CString offset4_str;
+			m_offset4.GetWindowText(offset4_str);
+			if (offset4_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 3:
+		{
+			CString offset3_str;
+			m_offset3.GetWindowText(offset3_str);
+			if (offset3_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 2:
+		{
+			CString offset2_str;
+			m_offset2.GetWindowText(offset2_str);
+			if (offset2_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 1:
+		{
+			CString offset1_str;
+			m_offset1.GetWindowText(offset1_str);
+			if (offset1_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		case 0:
+		{
+			CString base_addr_str;
+			m_base_addr.GetWindowText(base_addr_str);
+			if (base_addr_str.IsEmpty()) {
+				return false;
+			}
+		}
+		break;
+		default:
+			return false;
+			break;
+		}
+	}
+
+	return true;
+}
+
+int CMemToolDlg::getIncByIndex(int index)
+{
+
+	switch (index)
+	{
+	case 10:
+	{
+		CString offset10_str;
+		m_offset10.GetWindowText(offset10_str);
+		return wcstoul(offset10_str, NULL, 16);
+	}
+	break;
+	case 9:
+	{
+		CString offset9_str;
+		m_offset9.GetWindowText(offset9_str);
+		return wcstoul(offset9_str, NULL, 16);
+	}
+	break;
+	case 8:
+	{
+		CString offset8_str;
+		m_offset8.GetWindowText(offset8_str);
+		return wcstoul(offset8_str, NULL, 16);
+	}
+	break;
+	case 7:
+	{
+		CString offset7_str;
+		m_offset7.GetWindowText(offset7_str);
+		return wcstoul(offset7_str, NULL, 16);
+	}
+	break;
+	case 6:
+	{
+		CString offset6_str;
+		m_offset6.GetWindowText(offset6_str);
+		return wcstoul(offset6_str, NULL, 16);
+	}
+	break;
+	case 5:
+	{
+		CString offset5_str;
+		m_offset5.GetWindowText(offset5_str);
+		return wcstoul(offset5_str, NULL, 16);
+	}
+	break;
+	case 4:
+	{
+		CString offset4_str;
+		m_offset4.GetWindowText(offset4_str);
+		return wcstoul(offset4_str, NULL, 16);
+	}
+	break;
+	case 3:
+	{
+		CString offset3_str;
+		m_offset3.GetWindowText(offset3_str);
+		return wcstoul(offset3_str, NULL, 16);
+	}
+	break;
+	case 2:
+	{
+		CString offset2_str;
+		m_offset2.GetWindowText(offset2_str);
+		return wcstoul(offset2_str, NULL, 16);
+	}
+	break;
+	case 1:
+	{
+		CString offset1_str;
+		m_offset1.GetWindowText(offset1_str);
+		return wcstoul(offset1_str, NULL, 16);
+	}
+	break;
+	case 0:
+	{
+		CString base_addr_str;
+		m_base_addr.GetWindowText(base_addr_str);
+		return wcstoul(base_addr_str, NULL, 16);
+	}
+	break;
+	default:
+		return 0;
+		break;
+	}
+	return 0;
 }
