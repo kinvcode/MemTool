@@ -73,6 +73,10 @@ BEGIN_MESSAGE_MAP(CMemToolDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CHECK6, &CMemToolDlg::OnBnClickedCheck6)
 	ON_BN_CLICKED(IDC_BUTTON1, &CMemToolDlg::OnBnClickedButton1)
 	ON_CBN_SELCHANGE(IDC_COMBO1, &CMemToolDlg::OnCbnSelchangeCombo1)
+	ON_CBN_SELCHANGE(IDC_COMBO2, &CMemToolDlg::OnCbnSelchangeCombo2)
+	ON_CBN_SELCHANGE(IDC_COMBO3, &CMemToolDlg::OnCbnSelchangeCombo3)
+	ON_CBN_SELCHANGE(IDC_COMBO4, &CMemToolDlg::OnCbnSelchangeCombo4)
+	ON_CBN_SELCHANGE(IDC_COMBO5, &CMemToolDlg::OnCbnSelchangeCombo5)
 END_MESSAGE_MAP()
 
 
@@ -405,11 +409,13 @@ void CMemToolDlg::OnBnClickedButton1()
 											rowData(handle, list_index);
 											*m_loop5_inc_item += m_inc5_num;
 											list_index++;
+											handleEvents();
 										}
 									}
 									else {
 										// 计算当前循环索引
 										rowData(handle, list_index);
+										handleEvents();
 									}
 									*m_loop4_inc_item += m_inc4_num;
 									list_index++;
@@ -419,6 +425,7 @@ void CMemToolDlg::OnBnClickedButton1()
 							else {
 								// 计算当前循环索引
 								rowData(handle, list_index);
+								handleEvents();
 							}
 							*m_loop3_inc_item += m_inc3_num;
 							list_index++;
@@ -428,6 +435,7 @@ void CMemToolDlg::OnBnClickedButton1()
 					else {
 						// 计算当前循环索引
 						rowData(handle, list_index);
+						handleEvents();
 					}
 					*m_loop2_inc_item += m_inc2_num;
 					list_index++;
@@ -436,6 +444,7 @@ void CMemToolDlg::OnBnClickedButton1()
 			else {
 				// 读取一层循环的地址数据
 				rowData(handle, list_index);
+				handleEvents();
 			}
 			// 一级遍历递增
 			*m_loop1_inc_item += m_inc1_num;
@@ -1191,4 +1200,62 @@ void CMemToolDlg::OnCbnSelchangeCombo1()
 	m_combo3.SetCurSel(0);
 	m_combo4.SetCurSel(0);
 	m_combo5.SetCurSel(0);
+}
+
+
+void CMemToolDlg::OnCbnSelchangeCombo2()
+{
+	// 二级遍历，递增选项改变事件
+	m_combo3.SetCurSel(0);
+	m_combo4.SetCurSel(0);
+	m_combo5.SetCurSel(0);
+
+	// 检查合法数据
+	int sel1 = m_combo1.GetCurSel();
+	if (m_combo2.GetCurSel() <= sel1) {
+		m_combo2.SetCurSel(0);
+		MessageBox(L"二级遍历必须高于一级遍历");
+	}
+}
+
+
+void CMemToolDlg::OnCbnSelchangeCombo3()
+{
+	// 三级遍历，递增选项改变事件
+	m_combo4.SetCurSel(0);
+	m_combo5.SetCurSel(0);
+
+	// 检查合法数据
+	int sel2 = m_combo2.GetCurSel();
+	if (m_combo3.GetCurSel() <= sel2) {
+		m_combo3.SetCurSel(0);
+		MessageBox(L"三级遍历必须高于二级遍历");
+	}
+}
+
+
+void CMemToolDlg::OnCbnSelchangeCombo4()
+{
+	// 四级遍历，递增选项改变事件
+	m_combo5.SetCurSel(0);
+
+	// 检查合法数据
+	int sel3 = m_combo3.GetCurSel();
+	if (m_combo4.GetCurSel() <= sel3) {
+		m_combo4.SetCurSel(0);
+		MessageBox(L"四级遍历必须高于三级遍历");
+	}
+}
+
+
+void CMemToolDlg::OnCbnSelchangeCombo5()
+{
+	// 五级遍历，递增选项改变事件
+
+	// 检查合法数据
+	int sel4 = m_combo4.GetCurSel();
+	if (m_combo5.GetCurSel() <= sel4) {
+		m_combo5.SetCurSel(0);
+		MessageBox(L"五级遍历必须高于四级遍历");
+	}
 }

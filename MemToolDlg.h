@@ -138,4 +138,8 @@ public:
 	CEdit m_pid;
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnCbnSelchangeCombo1();
+	afx_msg void OnCbnSelchangeCombo2();
+	afx_msg void OnCbnSelchangeCombo3();
+	afx_msg void OnCbnSelchangeCombo4();
+	afx_msg void OnCbnSelchangeCombo5();
 };
