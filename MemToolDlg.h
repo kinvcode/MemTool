@@ -20,8 +20,46 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
-// 用户函数
-protected:
+// 数据
+public:
+	// 基址与偏移数值
+	__int64 m_base_address_numeric = -1;
+	__int64 m_offset1_numeric = -1;
+	__int64 m_offset2_numeric = -1;
+	__int64 m_offset3_numeric = -1;
+	__int64 m_offset4_numeric = -1;
+	__int64 m_offset5_numeric = -1;
+	__int64 m_offset6_numeric = -1;
+	__int64 m_offset7_numeric = -1;
+	__int64 m_offset8_numeric = -1;
+	__int64 m_offset9_numeric = -1;
+	__int64 m_offset10_numeric = -1;
+	// 循环遍历勾选状态
+	bool m_loop1_checked = false;
+	bool m_loop2_checked = false;
+	bool m_loop3_checked = false;
+	bool m_loop4_checked = false;
+	bool m_loop5_checked = false;
+	// 循环遍历递增数值指针
+	__int64* m_loop1_inc_item = nullptr;
+	__int64* m_loop2_inc_item = nullptr;
+	__int64* m_loop3_inc_item = nullptr;
+	__int64* m_loop4_inc_item = nullptr;
+	__int64* m_loop5_inc_item = nullptr;
+	// 循环遍历次数
+	int m_loop1_num = 0;
+	int m_loop2_num = 0;
+	int m_loop3_num = 0;
+	int m_loop4_num = 0;
+	int m_loop5_num = 0;
+	// 循环遍历递增
+	int m_inc1_num = 0;
+	int m_inc2_num = 0;
+	int m_inc3_num = 0;
+	int m_inc4_num = 0;
+	int m_inc5_num = 0;
+	// 用户函数
+public:
 	void initListCtr();
 	void initCheckBoxs();
 	void initComboxs();
@@ -30,8 +68,25 @@ protected:
 	// 检查递增选项是否合法
 	bool checkIncSel(int cur);
 	// 根据递增索引获取数值
-	int getIncByIndex(int index);
-
+	__int64* getIncByIndex(int index);
+	// 处理当前行的数据
+	void rowData(HANDLE handle, int row);
+	// 初始化基址与偏移数值
+	bool initBaseAndOffset();
+	// 初始化循环遍历勾选状态
+	void initLoopCheckbox();
+	// 初始化循环与递增
+	bool initLoopAndInc();
+	// 检测一层遍历
+	bool verifyLoop1();
+	// 检测二层遍历
+	bool verifyLoop2();
+	// 检测三层遍历
+	bool verifyLoop3();
+	// 检测四层遍历
+	bool verifyLoop4();
+	// 检测五层遍历
+	bool verifyLoop5();
 	// 实现
 protected:
 	HICON m_hIcon;
@@ -82,4 +137,5 @@ public:
 	CEdit m_inc5;
 	CEdit m_pid;
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnCbnSelchangeCombo1();
 };
