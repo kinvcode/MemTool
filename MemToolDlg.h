@@ -3,7 +3,26 @@
 //
 
 #pragma once
+#include <unordered_map>
+#include <vector>
 
+using namespace std;
+
+struct LISTROWDATA {
+	CString addr_str;	// 地址表达式字符串
+	CString pointer_str;// 指针字符串
+	int int_num;		// 整数
+	CString int_str;	// 整数字符串
+	__int64 int64_num;	// 长整数
+	CString int64_str;	// 长整数字符串
+	float float_num;	// 浮点数
+	CString float_str;	// 浮点数字符串
+	double double_num;	// 双精度浮点数
+	CString double_str;	// 双精度浮点数字符串
+	CString text;		// 文本
+	int decrypt_value;	// 解密值
+	CString decrypt_value_str;	// 解密值字符串
+};
 
 // CMemToolDlg 对话框
 class CMemToolDlg : public CDialogEx
@@ -58,6 +77,15 @@ public:
 	int m_inc3_num = 0;
 	int m_inc4_num = 0;
 	int m_inc5_num = 0;
+	// 是否停止搜索
+	bool m_need_stop_search;
+	// 64位数据映射
+	unordered_map<__int64, __int64> m_bit64_map;
+	// 行数据映射
+	unordered_map<__int64, LISTROWDATA> m_data_map;
+	// 列表数据容器
+	vector<LISTROWDATA> m_list_data;
+
 	// 用户函数
 public:
 	void initListCtr();
@@ -87,6 +115,12 @@ public:
 	bool verifyLoop4();
 	// 检测五层遍历
 	bool verifyLoop5();
+	// 从缓存中读取地址
+	__int64 readLongByMap(HANDLE handle, __int64 address);
+	// 从缓存中读取一行数据
+	LISTROWDATA readRowDataByMap(HANDLE handle, __int64 address, __int64 tmp_pointer, CString th_addr);
+	// 更新当前搜索进度
+	void updateSearchPos(int index, int count);
 	// 实现
 protected:
 	HICON m_hIcon;
@@ -142,4 +176,7 @@ public:
 	afx_msg void OnCbnSelchangeCombo3();
 	afx_msg void OnCbnSelchangeCombo4();
 	afx_msg void OnCbnSelchangeCombo5();
+	afx_msg void OnBnClickedButton2();
+	CButton m_stop_search;
+	CStatic m_search_pos;
 };

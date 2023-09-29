@@ -61,6 +61,8 @@ void CMemToolDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT20, m_inc4);
 	DDX_Control(pDX, IDC_EDIT22, m_inc5);
 	DDX_Control(pDX, IDC_EDIT1, m_pid);
+	DDX_Control(pDX, IDC_BUTTON2, m_stop_search);
+	DDX_Control(pDX, IDC_STATIC36, m_search_pos);
 }
 
 BEGIN_MESSAGE_MAP(CMemToolDlg, CDialogEx)
@@ -77,6 +79,7 @@ BEGIN_MESSAGE_MAP(CMemToolDlg, CDialogEx)
 	ON_CBN_SELCHANGE(IDC_COMBO3, &CMemToolDlg::OnCbnSelchangeCombo3)
 	ON_CBN_SELCHANGE(IDC_COMBO4, &CMemToolDlg::OnCbnSelchangeCombo4)
 	ON_CBN_SELCHANGE(IDC_COMBO5, &CMemToolDlg::OnCbnSelchangeCombo5)
+	ON_BN_CLICKED(IDC_BUTTON2, &CMemToolDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
@@ -353,6 +356,7 @@ void CMemToolDlg::OnBnClickedCheck6()
 
 void CMemToolDlg::OnBnClickedButton1()
 {
+	__int64 start_time = CTime::GetCurrentTime().GetTime();
 	// 开始遍历
 	int pid = getProcessPID(L"DNF.exe");
 	if (pid == 0)
@@ -390,6 +394,13 @@ void CMemToolDlg::OnBnClickedButton1()
 
 	// 清空列表数据
 	m_list.DeleteAllItems();
+
+	// 清空64位数据映射
+	m_bit64_map.clear();
+
+	// 显示停止搜索按钮
+	m_stop_search.ShowWindow(true);
+
 	int list_index = 0;
 	// 一层循环
 	if (m_loop1_checked) {
@@ -407,6 +418,12 @@ void CMemToolDlg::OnBnClickedButton1()
 										for (int loop5_index = 0; loop5_index < m_loop5_num; loop5_index++) {
 											// 计算当前循环索引
 											rowData(handle, list_index);
+											// 更新搜索进度
+											updateSearchPos(list_index, m_loop1_num * m_loop2_num * m_loop3_num * m_loop4_num * m_loop5_num);
+											// 停止搜索
+											if (m_need_stop_search) {
+												goto search_end;
+											}
 											*m_loop5_inc_item += m_inc5_num;
 											list_index++;
 											handleEvents();
@@ -415,6 +432,12 @@ void CMemToolDlg::OnBnClickedButton1()
 									else {
 										// 计算当前循环索引
 										rowData(handle, list_index);
+										// 更新搜索进度
+										updateSearchPos(list_index, m_loop1_num * m_loop2_num * m_loop3_num * m_loop4_num);
+										// 停止搜索
+										if (m_need_stop_search) {
+											goto search_end;
+										}
 										handleEvents();
 									}
 									*m_loop4_inc_item += m_inc4_num;
@@ -425,6 +448,12 @@ void CMemToolDlg::OnBnClickedButton1()
 							else {
 								// 计算当前循环索引
 								rowData(handle, list_index);
+								// 更新搜索进度
+								updateSearchPos(list_index, m_loop1_num * m_loop2_num * m_loop3_num);
+								// 停止搜索
+								if (m_need_stop_search) {
+									goto search_end;
+								}
 								handleEvents();
 							}
 							*m_loop3_inc_item += m_inc3_num;
@@ -435,6 +464,12 @@ void CMemToolDlg::OnBnClickedButton1()
 					else {
 						// 计算当前循环索引
 						rowData(handle, list_index);
+						// 更新搜索进度
+						updateSearchPos(list_index, m_loop1_num * m_loop2_num);
+						// 停止搜索
+						if (m_need_stop_search) {
+							goto search_end;
+						}
 						handleEvents();
 					}
 					*m_loop2_inc_item += m_inc2_num;
@@ -444,6 +479,12 @@ void CMemToolDlg::OnBnClickedButton1()
 			else {
 				// 读取一层循环的地址数据
 				rowData(handle, list_index);
+				// 更新搜索进度
+				updateSearchPos(list_index, m_loop1_num);
+				// 停止搜索
+				if (m_need_stop_search) {
+					goto search_end;
+				}
 				handleEvents();
 			}
 			// 一级遍历递增
@@ -454,7 +495,19 @@ void CMemToolDlg::OnBnClickedButton1()
 	else {
 		// 没有循环，只读取一次地址
 		rowData(handle, list_index);
+		updateSearchPos(1, 1);
 	}
+
+search_end:
+	// 隐藏停止搜索按钮
+	m_stop_search.ShowWindow(false);
+	m_need_stop_search = false;
+
+	__int64 end_time = CTime::GetCurrentTime().GetTime();
+	__int64 total_time = end_time - start_time;
+	CString time_str;
+	time_str.Format(L"当前搜索用时：%d秒", total_time);
+	MessageBox(time_str);
 }
 
 
@@ -686,57 +739,68 @@ void CMemToolDlg::rowData(HANDLE handle, int row)
 	cur_address = m_base_address_numeric;
 
 	// 获取指针
-	tmp_pointer = readLong(handle, cur_address);
+	//tmp_pointer = readLong(handle, cur_address);
+	tmp_pointer = readLongByMap(handle, cur_address);
 
 	// 处理一级偏移
 	if (m_offset1_numeric != -1) {
 		cur_address = tmp_pointer + m_offset1_numeric;
-		tmp_pointer = readLong(handle, cur_address);
+		//tmp_pointer = readLong(handle, cur_address);
+		tmp_pointer = readLongByMap(handle, cur_address);
 
 		// 处理二级偏移
 		if (m_offset2_numeric != -1) {
 			cur_address = tmp_pointer + m_offset2_numeric;
-			tmp_pointer = readLong(handle, cur_address);
+			//tmp_pointer = readLong(handle, cur_address);
+			tmp_pointer = readLongByMap(handle, cur_address);
 
 			// 处理三级偏移
 			if (m_offset3_numeric != -1) {
 				cur_address = tmp_pointer + m_offset3_numeric;
-				tmp_pointer = readLong(handle, cur_address);
+				//tmp_pointer = readLong(handle, cur_address);
+				tmp_pointer = readLongByMap(handle, cur_address);
 
 				// 处理四级偏移
 				if (m_offset4_numeric != -1) {
 					cur_address = tmp_pointer + m_offset4_numeric;
-					tmp_pointer = readLong(handle, cur_address);
+					//tmp_pointer = readLong(handle, cur_address);
+					tmp_pointer = readLongByMap(handle, cur_address);
 
 					// 处理五级偏移
 					if (m_offset5_numeric != -1) {
 						cur_address = tmp_pointer + m_offset5_numeric;
-						tmp_pointer = readLong(handle, cur_address);
+						//tmp_pointer = readLong(handle, cur_address);
+						tmp_pointer = readLongByMap(handle, cur_address);
 
 						// 处理六级偏移
 						if (m_offset6_numeric != -1) {
 							cur_address = tmp_pointer + m_offset6_numeric;
-							tmp_pointer = readLong(handle, cur_address);
+							//tmp_pointer = readLong(handle, cur_address);
+							tmp_pointer = readLongByMap(handle, cur_address);
 
 							// 处理七级偏移
 							if (m_offset7_numeric != -1) {
 								cur_address = tmp_pointer + m_offset7_numeric;
-								tmp_pointer = readLong(handle, cur_address);
+								//tmp_pointer = readLong(handle, cur_address);
+								tmp_pointer = readLongByMap(handle, cur_address);
 
 								// 处理八级偏移
 								if (m_offset8_numeric != -1) {
 									cur_address = tmp_pointer + m_offset8_numeric;
-									tmp_pointer = readLong(handle, cur_address);
+									//tmp_pointer = readLong(handle, cur_address);
+									tmp_pointer = readLongByMap(handle, cur_address);
 
 									// 处理九级偏移
 									if (m_offset9_numeric != -1) {
 										cur_address = tmp_pointer + m_offset9_numeric;
-										tmp_pointer = readLong(handle, cur_address);
+										//tmp_pointer = readLong(handle, cur_address);
+										tmp_pointer = readLongByMap(handle, cur_address);
 
 										// 处理十级偏移
 										if (m_offset10_numeric != -1) {
 											cur_address = tmp_pointer + m_offset9_numeric;
-											tmp_pointer = readLong(handle, cur_address);
+											//tmp_pointer = readLong(handle, cur_address);
+											tmp_pointer = readLongByMap(handle, cur_address);
 											// 拼接地址（10级偏移）
 											th_addr.Format(L"[[[[[[[[[[[%llX]+%llX]+%llX]+%llX]+%llX]+%llX]+%llX]+%llX]+%llX]+%llX]+%llX]", m_base_address_numeric, m_offset1_numeric, m_offset2_numeric, m_offset3_numeric, m_offset4_numeric, m_offset5_numeric, m_offset6_numeric, m_offset7_numeric, m_offset8_numeric, m_offset9_numeric, m_offset10_numeric);
 										}
@@ -790,38 +854,23 @@ void CMemToolDlg::rowData(HANDLE handle, int row)
 		th_addr.Format(L"[%llX]", m_base_address_numeric);
 	}
 
-	// 当前地址指针的字符串
-	CString pointer_str;
-	pointer_str.Format(L"%llX", tmp_pointer);
+	LISTROWDATA tmp_row_data = readRowDataByMap(handle, cur_address, tmp_pointer, th_addr);
 
-	// 获取整数
-	int tmp_int = readInt(handle, cur_address);
-	CString int_str;
-	int_str.Format(L"%d", tmp_int);
+	// 表数据保存（用于数据筛选）
+	m_list_data.push_back(tmp_row_data);
 
-	// 获取长整数
-	CString long_str;
-	long_str.Format(L"%lld", tmp_pointer);
-
-	// 获取小数
-	float tmp_float = readFloat(handle, cur_address);
-	CString float_str;
-	float_str.Format(L"%G", tmp_float);
-
-	// 获取双精度浮点
-	double tmp_double = readDouble(handle, cur_address);
-	CString double_str;
-	double_str.Format(L"%G", tmp_double);
-
-	// 获取字符串
-	CString tmp_str = readCString(handle, tmp_pointer, 50);
-
-	// 解密整型
-	int tmp_res = readInt(handle, tmp_pointer);
-	CString res;
-	res.Format(L"%d", tmp_res);
-
-	insertRowData(row, th_addr, pointer_str, int_str, long_str, float_str, double_str, tmp_str, res);
+	// 插入当前行数据
+	insertRowData(
+		row,
+		th_addr,
+		tmp_row_data.pointer_str,
+		tmp_row_data.int_str,
+		tmp_row_data.int64_str,
+		tmp_row_data.float_str,
+		tmp_row_data.double_str,
+		tmp_row_data.text,
+		tmp_row_data.decrypt_value_str
+	);
 }
 
 bool CMemToolDlg::initBaseAndOffset()
@@ -1258,4 +1307,92 @@ void CMemToolDlg::OnCbnSelchangeCombo5()
 		m_combo5.SetCurSel(0);
 		MessageBox(L"五级遍历必须高于四级遍历");
 	}
+}
+
+__int64 CMemToolDlg::readLongByMap(HANDLE handle, __int64 address)
+{
+	if (m_bit64_map.count(address)) {
+		return m_bit64_map[address];
+	}
+	else {
+		__int64 bit64 = readLong(handle, address);
+		m_bit64_map.insert({ address,bit64 });
+		return bit64;
+	}
+}
+
+LISTROWDATA CMemToolDlg::readRowDataByMap(HANDLE handle, __int64 address, __int64 tmp_pointer, CString th_addr)
+{
+	if (m_data_map.count(address)) {
+	//if (false) {
+		return m_data_map[address];
+	}
+	else {
+		LISTROWDATA tmp_row_data;
+
+		// 当前地址表达式
+		tmp_row_data.addr_str = th_addr;
+
+		// 当前地址指针的字符串
+		CString pointer_str;
+		pointer_str.Format(L"%llX", tmp_pointer);
+		tmp_row_data.pointer_str = pointer_str;
+
+		// 获取整数
+		//int tmp_int = readInt(handle, cur_address);
+		int tmp_int = (int)(tmp_pointer >> 32);
+		CString int_str;
+		int_str.Format(L"%d", tmp_int);
+		tmp_row_data.int_num = tmp_int;
+		tmp_row_data.int_str = int_str;
+
+		// 获取长整数
+		CString int64_str;
+		int64_str.Format(L"%lld", tmp_pointer);
+		tmp_row_data.int64_num = tmp_pointer;
+		tmp_row_data.int64_str = int64_str;
+
+		// 获取小数
+		//float tmp_float = readFloat(handle, cur_address);
+		float tmp_float = (float)tmp_int;
+		CString float_str;
+		float_str.Format(L"%G", tmp_float);
+		tmp_row_data.float_num = tmp_float;
+		tmp_row_data.float_str = float_str;
+
+		// 获取双精度浮点
+		//double tmp_double = readDouble(handle, cur_address);
+		double tmp_double = (double)tmp_pointer;
+		CString double_str;
+		double_str.Format(L"%G", tmp_double);
+		tmp_row_data.double_num = tmp_double;
+		tmp_row_data.double_str = double_str;
+
+		// 获取字符串
+		CString tmp_str = readCString(handle, tmp_pointer, 50);
+		tmp_row_data.text = tmp_str;
+
+		// 解密整型
+		int tmp_res = readInt(handle, tmp_pointer);
+		CString res;
+		res.Format(L"%d", tmp_res);
+		tmp_row_data.decrypt_value = tmp_res;
+		tmp_row_data.decrypt_value_str = res;
+		return tmp_row_data;
+	}
+}
+
+void CMemToolDlg::OnBnClickedButton2()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_need_stop_search = true;
+	m_stop_search.ShowWindow(false);
+}
+
+void CMemToolDlg::updateSearchPos(int index, int count)
+{
+	index += 1;
+	CString pos_str;
+	pos_str.Format(L"%d/%d", index, count);
+	m_search_pos.SetWindowText(pos_str);
 }
