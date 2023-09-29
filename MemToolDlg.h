@@ -78,7 +78,9 @@ public:
 	int m_inc4_num = 0;
 	int m_inc5_num = 0;
 	// 是否停止搜索
-	bool m_need_stop_search;
+	bool m_need_stop_search = false;
+	// 是否停止过滤
+	bool m_need_stop_filter = false;
 	// 64位数据映射
 	unordered_map<__int64, __int64> m_bit64_map;
 	// 行数据映射
@@ -121,6 +123,66 @@ public:
 	LISTROWDATA readRowDataByMap(HANDLE handle, __int64 address, __int64 tmp_pointer, CString th_addr);
 	// 更新当前搜索进度
 	void updateSearchPos(int index, int count);
+	// 初始化过滤器
+	void initFilter();
+	// 整数相等
+	vector<LISTROWDATA> intEqual();
+	// 整数大于
+	vector<LISTROWDATA> intGreaterThan();
+	// 整数小于
+	vector<LISTROWDATA> intLessThan();
+	// 整数不等于
+	vector<LISTROWDATA> intnotEqual();
+	// 整数两者之间
+	vector<LISTROWDATA> intBetween();
+	// 长整数相等
+	vector<LISTROWDATA> int64Equal();
+	// 长整数大于
+	vector<LISTROWDATA> int64GreaterThan();
+	// 长整数小于
+	vector<LISTROWDATA> int64LessThan();
+	// 长整数不等于
+	vector<LISTROWDATA> int64notEqual();
+	// 长整数两者之间
+	vector<LISTROWDATA> int64Between();
+	// 浮点数相等
+	vector<LISTROWDATA> floatEqual();
+	// 浮点数大于
+	vector<LISTROWDATA> floatGreaterThan();
+	// 浮点数小于
+	vector<LISTROWDATA> floatLessThan();
+	// 浮点数不等于
+	vector<LISTROWDATA> floatnotEqual();
+	// 浮点数两者之间
+	vector<LISTROWDATA> floatBetween();
+	// 双精度相等
+	vector<LISTROWDATA> doubleEqual();
+	// 双精度大于
+	vector<LISTROWDATA> doubleGreaterThan();
+	// 双精度小于
+	vector<LISTROWDATA> doubleLessThan();
+	// 双精度不等于
+	vector<LISTROWDATA> doublenotEqual();
+	// 双精度两者之间
+	vector<LISTROWDATA> doubleBetween();
+	// 解密值相等
+	vector<LISTROWDATA> decryptEqual();
+	// 解密值大于
+	vector<LISTROWDATA> decryptGreaterThan();
+	// 解密值小于
+	vector<LISTROWDATA> decryptLessThan();
+	// 解密值不等于
+	vector<LISTROWDATA> decryptnotEqual();
+	// 解密值两者之间
+	vector<LISTROWDATA> decryptBetween();
+	// 文本相等
+	vector<LISTROWDATA> textEqual();
+	// 文本包含
+	vector<LISTROWDATA> textContain();
+	// 显示区间编辑框
+	void showBetweenValue(bool show);
+	// 更新过滤结果数量
+	void updateFilterCount(int count);
 	// 实现
 protected:
 	HICON m_hIcon;
@@ -179,4 +241,17 @@ public:
 	afx_msg void OnBnClickedButton2();
 	CButton m_stop_search;
 	CStatic m_search_pos;
+	CButton m_filter_type;
+	int m_filter_type_value;
+	afx_msg void OnBnClickedRadio1();
+	CComboBox m_filter_condition;
+	afx_msg void OnCbnSelchangeCombo6();
+	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedButton4();
+	CButton m_filter_btn;
+	CButton m_stop_filter_btn;
+	CStatic m_filter_result;
+	CEdit m_compare_value;
+	CEdit m_compare_min_value;
+	CEdit m_compare_max_value;
 };

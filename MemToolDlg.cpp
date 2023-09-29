@@ -21,6 +21,7 @@
 
 CMemToolDlg::CMemToolDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MEMTOOL_DIALOG, pParent)
+	, m_filter_type_value(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -63,6 +64,15 @@ void CMemToolDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT1, m_pid);
 	DDX_Control(pDX, IDC_BUTTON2, m_stop_search);
 	DDX_Control(pDX, IDC_STATIC36, m_search_pos);
+	DDX_Control(pDX, IDC_RADIO1, m_filter_type);
+	DDX_Radio(pDX, IDC_RADIO1, m_filter_type_value);
+	DDX_Control(pDX, IDC_COMBO6, m_filter_condition);
+	DDX_Control(pDX, IDC_BUTTON3, m_filter_btn);
+	DDX_Control(pDX, IDC_BUTTON4, m_stop_filter_btn);
+	DDX_Control(pDX, IDC_STATIC41, m_filter_result);
+	DDX_Control(pDX, IDC_EDIT23, m_compare_value);
+	DDX_Control(pDX, IDC_EDIT24, m_compare_min_value);
+	DDX_Control(pDX, IDC_EDIT25, m_compare_max_value);
 }
 
 BEGIN_MESSAGE_MAP(CMemToolDlg, CDialogEx)
@@ -80,6 +90,15 @@ BEGIN_MESSAGE_MAP(CMemToolDlg, CDialogEx)
 	ON_CBN_SELCHANGE(IDC_COMBO4, &CMemToolDlg::OnCbnSelchangeCombo4)
 	ON_CBN_SELCHANGE(IDC_COMBO5, &CMemToolDlg::OnCbnSelchangeCombo5)
 	ON_BN_CLICKED(IDC_BUTTON2, &CMemToolDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_RADIO1, &CMemToolDlg::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO2, &CMemToolDlg::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO3, &CMemToolDlg::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO4, &CMemToolDlg::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO5, &CMemToolDlg::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO6, &CMemToolDlg::OnBnClickedRadio1)
+	ON_CBN_SELCHANGE(IDC_COMBO6, &CMemToolDlg::OnCbnSelchangeCombo6)
+	ON_BN_CLICKED(IDC_BUTTON3, &CMemToolDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CMemToolDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 
@@ -106,6 +125,8 @@ BOOL CMemToolDlg::OnInitDialog()
 	initCheckBoxs();
 	// 初始化组合框
 	initComboxs();
+	// 初始化过滤
+	initFilter();
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -401,6 +422,9 @@ void CMemToolDlg::OnBnClickedButton1()
 	// 显示停止搜索按钮
 	m_stop_search.ShowWindow(true);
 
+	// 禁用过滤按钮
+	m_filter_btn.EnableWindow(false);
+
 	int list_index = 0;
 	// 一层循环
 	if (m_loop1_checked) {
@@ -502,6 +526,9 @@ search_end:
 	// 隐藏停止搜索按钮
 	m_stop_search.ShowWindow(false);
 	m_need_stop_search = false;
+
+	// 显示过滤按钮
+	m_filter_btn.EnableWindow(true);
 
 	__int64 end_time = CTime::GetCurrentTime().GetTime();
 	__int64 total_time = end_time - start_time;
@@ -1324,7 +1351,7 @@ __int64 CMemToolDlg::readLongByMap(HANDLE handle, __int64 address)
 LISTROWDATA CMemToolDlg::readRowDataByMap(HANDLE handle, __int64 address, __int64 tmp_pointer, CString th_addr)
 {
 	if (m_data_map.count(address)) {
-	//if (false) {
+		//if (false) {
 		return m_data_map[address];
 	}
 	else {
@@ -1395,4 +1422,1367 @@ void CMemToolDlg::updateSearchPos(int index, int count)
 	CString pos_str;
 	pos_str.Format(L"%d/%d", index, count);
 	m_search_pos.SetWindowText(pos_str);
+}
+
+void CMemToolDlg::initFilter()
+{
+	//m_filter_type.SetCheck(true);
+	m_filter_condition.ResetContent();
+	m_filter_condition.InsertString(0, L"等于");
+	m_filter_condition.InsertString(1, L"小于");
+	m_filter_condition.InsertString(2, L"大于");
+	m_filter_condition.InsertString(3, L"不等于");
+	m_filter_condition.InsertString(4, L"两者之间");
+	m_filter_condition.SetCurSel(0);
+}
+
+
+void CMemToolDlg::OnBnClickedRadio1()
+{
+	UpdateData(true);
+
+	switch (m_filter_type_value) {
+	case 0:
+		// 整数
+		m_filter_condition.ResetContent();
+		m_filter_condition.InsertString(0, L"等于");
+		m_filter_condition.InsertString(1, L"小于");
+		m_filter_condition.InsertString(2, L"大于");
+		m_filter_condition.InsertString(3, L"不等于");
+		m_filter_condition.InsertString(4, L"两者之间");
+		m_filter_condition.SetCurSel(0);
+		break;
+	case 1:
+		// 长整数
+		m_filter_condition.ResetContent();
+		m_filter_condition.InsertString(0, L"等于");
+		m_filter_condition.InsertString(1, L"小于");
+		m_filter_condition.InsertString(2, L"大于");
+		m_filter_condition.InsertString(3, L"不等于");
+		m_filter_condition.InsertString(4, L"两者之间");
+		m_filter_condition.SetCurSel(0);
+		break;
+	case 2:
+		// 浮点
+		m_filter_condition.ResetContent();
+		m_filter_condition.InsertString(0, L"等于");
+		m_filter_condition.InsertString(1, L"小于");
+		m_filter_condition.InsertString(2, L"大于");
+		m_filter_condition.InsertString(3, L"不等于");
+		m_filter_condition.InsertString(4, L"两者之间");
+		m_filter_condition.SetCurSel(0);
+		break;
+	case 3:
+		// 双精度
+		m_filter_condition.ResetContent();
+		m_filter_condition.InsertString(0, L"等于");
+		m_filter_condition.InsertString(1, L"小于");
+		m_filter_condition.InsertString(2, L"大于");
+		m_filter_condition.InsertString(3, L"不等于");
+		m_filter_condition.InsertString(4, L"两者之间");
+		m_filter_condition.SetCurSel(0);
+		break;
+	case 4:
+		// 文本
+		m_filter_condition.ResetContent();
+		m_filter_condition.InsertString(0, L"等于");
+		m_filter_condition.InsertString(1, L"包含");
+		m_filter_condition.SetCurSel(0);
+		break;
+	case 5:
+		// 解密
+		m_filter_condition.ResetContent();
+		m_filter_condition.InsertString(0, L"等于");
+		m_filter_condition.InsertString(1, L"小于");
+		m_filter_condition.InsertString(2, L"大于");
+		m_filter_condition.InsertString(3, L"不等于");
+		m_filter_condition.InsertString(4, L"两者之间");
+		m_filter_condition.SetCurSel(0);
+		break;
+	default:
+		MessageBox(L"无效的选项");
+		break;
+	}
+}
+
+
+void CMemToolDlg::OnCbnSelchangeCombo6()
+{
+	// 过滤条件发生改变
+	int index = m_filter_condition.GetCurSel();
+
+	// 如果是区间比较
+	if (index == 4)
+	{
+		showBetweenValue(true);
+	}
+	else {
+		showBetweenValue(false);
+	}
+}
+
+
+void CMemToolDlg::OnBnClickedButton3()
+{
+	// 开始过滤
+	if (m_list_data.size() < 1) {
+		MessageBox(L"当前没有数据");
+		return;
+	}
+
+	UpdateData();
+
+	m_stop_filter_btn.ShowWindow(true);
+
+	// 清空列表
+	m_list.DeleteAllItems();
+
+	// 当前过滤条件
+	int tmp_filter_condition = m_filter_condition.GetCurSel();
+
+	if (tmp_filter_condition == 4) {
+		CString compare_min_value_str,compare_max_value_str;
+		m_compare_min_value.GetWindowText(compare_min_value_str);
+		m_compare_max_value.GetWindowText(compare_max_value_str);
+		if (compare_min_value_str.IsEmpty() || compare_max_value_str.IsEmpty()) {
+			MessageBox(L"请填写过滤值");
+			return;
+		}
+	}
+	else {
+		CString compare_value_str;
+		m_compare_value.GetWindowText(compare_value_str);
+		if (compare_value_str.IsEmpty()) {
+			MessageBox(L"请填写过滤值");
+			return;
+		}
+	}
+
+	// 创建一个临时的vector容器存放过滤结果
+	vector<LISTROWDATA> tmp_list_data;
+
+	// 当前过滤类型
+	int type_value = m_filter_type_value;
+	switch (type_value)
+	{
+		// 处理整数
+	case 0:
+		switch (tmp_filter_condition)
+		{
+		case 0:
+			tmp_list_data = intEqual();
+			break;
+		case 1:
+			tmp_list_data = intLessThan();
+			break;
+		case 2:
+			tmp_list_data = intGreaterThan();
+			break;
+		case 3:
+			tmp_list_data = intnotEqual();
+			break;
+		case 4:
+			tmp_list_data = intBetween();
+			break;
+		default:
+			MessageBox(L"错误的过滤条件");
+			return;
+			break;
+		}
+		break;
+		// 处理长整数
+	case 1:
+		switch (tmp_filter_condition)
+		{
+		case 0:
+			tmp_list_data = int64Equal();
+			break;
+		case 1:
+			tmp_list_data = int64LessThan();
+			break;
+		case 2:
+			tmp_list_data = int64GreaterThan();
+			break;
+		case 3:
+			tmp_list_data = int64notEqual();
+			break;
+		case 4:
+			tmp_list_data = int64Between();
+			break;
+		default:
+			MessageBox(L"错误的过滤条件");
+			return;
+			break;
+		}
+		break;
+		// 处理浮点数
+	case 2:
+		switch (tmp_filter_condition)
+		{
+		case 0:
+			tmp_list_data = floatEqual();
+			break;
+		case 1:
+			tmp_list_data = floatLessThan();
+			break;
+		case 2:
+			tmp_list_data = floatGreaterThan();
+			break;
+		case 3:
+			tmp_list_data = floatnotEqual();
+			break;
+		case 4:
+			tmp_list_data = floatBetween();
+			break;
+		default:
+			MessageBox(L"错误的过滤条件");
+			return;
+			break;
+		}
+		break;
+		// 处理双精度
+	case 3:
+		switch (tmp_filter_condition)
+		{
+		case 0:
+			tmp_list_data = doubleEqual();
+			break;
+		case 1:
+			tmp_list_data = doubleLessThan();
+			break;
+		case 2:
+			tmp_list_data = doubleGreaterThan();
+			break;
+		case 3:
+			tmp_list_data = doublenotEqual();
+			break;
+		case 4:
+			tmp_list_data = doubleBetween();
+			break;
+		default:
+			MessageBox(L"错误的过滤条件");
+			return;
+			break;
+		}
+		break;
+		// 处理解密值
+	case 5:
+		switch (tmp_filter_condition)
+		{
+		case 0:
+			tmp_list_data = decryptEqual();
+			break;
+		case 1:
+			tmp_list_data = decryptLessThan();
+			break;
+		case 2:
+			tmp_list_data = decryptGreaterThan();
+			break;
+		case 3:
+			tmp_list_data = decryptnotEqual();
+			break;
+		case 4:
+			tmp_list_data = decryptBetween();
+			break;
+		default:
+			MessageBox(L"错误的过滤条件");
+			return;
+			break;
+		}
+		break;
+		// 处理文本
+	case 4:
+		switch (tmp_filter_condition)
+		{
+		case 0:
+			tmp_list_data = textEqual();
+			break;
+		case 1:
+			tmp_list_data = textContain();
+			break;
+		default:
+			MessageBox(L"错误的过滤条件");
+			return;
+			break;
+		}
+		break;
+	default:
+		MessageBox(L"错误的过滤类型");
+		return;
+		break;
+	}
+
+	// 将过滤结果全部转移给数据容器
+	m_list_data = tmp_list_data;
+
+	// 隐藏停止过滤按钮
+	m_stop_filter_btn.ShowWindow(false);
+	m_need_stop_filter = false;
+}
+
+
+void CMemToolDlg::OnBnClickedButton4()
+{
+	// 停止过滤
+	m_need_stop_filter = true;
+
+	// 隐藏按钮
+	m_stop_filter_btn.ShowWindow(false);
+	m_need_stop_filter = false;
+}
+
+
+// 整数相等
+vector<LISTROWDATA> CMemToolDlg::intEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	int target_num = _wtoi(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).int_num;
+		if (num == target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 整数大于
+vector<LISTROWDATA> CMemToolDlg::intGreaterThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	int target_num = _wtoi(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).int_num;
+		if (num > target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 整数小于
+vector<LISTROWDATA> CMemToolDlg::intLessThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	int target_num = _wtoi(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).int_num;
+		if (num < target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 整数不等于
+vector<LISTROWDATA> CMemToolDlg::intnotEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	int target_num = _wtoi(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).int_num;
+		if (num != target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 整数两者之间
+vector<LISTROWDATA> CMemToolDlg::intBetween()
+{
+	CString target_min_str;
+	m_compare_min_value.GetWindowText(target_min_str);
+	int target_min_num = _wtoi(target_min_str);
+
+	CString target_max_str;
+	m_compare_max_value.GetWindowText(target_max_str);
+	int target_max_num = _wtoi(target_max_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).int_num;
+		if (num >= target_min_num && num <= target_max_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 长整数相等
+vector<LISTROWDATA> CMemToolDlg::int64Equal()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	__int64 target_num = wcstoull(target_str, NULL, 10);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		__int64 num = (*item).int64_num;
+		if (num == target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 长整数大于
+vector<LISTROWDATA> CMemToolDlg::int64GreaterThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	__int64 target_num = wcstoull(target_str, NULL, 10);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		__int64 num = (*item).int64_num;
+		if (num > target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 长整数小于
+vector<LISTROWDATA> CMemToolDlg::int64LessThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	__int64 target_num = wcstoull(target_str, NULL, 10);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		__int64 num = (*item).int64_num;
+		if (num < target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 长整数不等于
+vector<LISTROWDATA> CMemToolDlg::int64notEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	__int64 target_num = wcstoull(target_str, NULL, 10);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		__int64 num = (*item).int64_num;
+		if (num != target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 长整数两者之间
+vector<LISTROWDATA> CMemToolDlg::int64Between()
+{
+	CString target_min_str;
+	m_compare_min_value.GetWindowText(target_min_str);
+	__int64 target_min_num = wcstoull(target_min_str, NULL, 10);
+
+	CString target_max_str;
+	m_compare_max_value.GetWindowText(target_max_str);
+	__int64 target_max_num = wcstoull(target_max_str, NULL, 10);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		__int64 num = (*item).int64_num;
+		if (num >= target_min_num && num <= target_max_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 浮点数相等
+vector<LISTROWDATA> CMemToolDlg::floatEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	float target_num = wcstof(target_str, NULL);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		float num = (*item).float_num;
+		if (num == target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 浮点数大于
+vector<LISTROWDATA> CMemToolDlg::floatGreaterThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	float target_num = wcstof(target_str, NULL);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		float num = (*item).float_num;
+		if (num > target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 浮点数小于
+vector<LISTROWDATA> CMemToolDlg::floatLessThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	float target_num = wcstof(target_str, NULL);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		float num = (*item).float_num;
+		if (num < target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 浮点数不等于
+vector<LISTROWDATA> CMemToolDlg::floatnotEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	float target_num = wcstof(target_str, NULL);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		float num = (*item).float_num;
+		if (num != target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 浮点数两者之间
+vector<LISTROWDATA> CMemToolDlg::floatBetween()
+{
+	CString target_min_str;
+	m_compare_min_value.GetWindowText(target_min_str);
+	float target_min_num = wcstof(target_min_str, NULL);
+
+	CString target_max_str;
+	m_compare_max_value.GetWindowText(target_max_str);
+	float target_max_num = wcstof(target_max_str, NULL);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		float num = (*item).float_num;
+		if (num >= target_min_num && num <= target_max_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 双精度相等
+vector<LISTROWDATA> CMemToolDlg::doubleEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	double target_num = _wtof(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		double num = (*item).double_num;
+		if (num == target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 双精度大于
+vector<LISTROWDATA> CMemToolDlg::doubleGreaterThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	double target_num = _wtof(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		double num = (*item).double_num;
+		if (num > target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 双精度小于
+vector<LISTROWDATA> CMemToolDlg::doubleLessThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	double target_num = _wtof(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		double num = (*item).double_num;
+		if (num < target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 双精度不等于
+vector<LISTROWDATA> CMemToolDlg::doublenotEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	double target_num = _wtof(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		double num = (*item).double_num;
+		if (num != target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+// 双精度两者之间
+vector<LISTROWDATA> CMemToolDlg::doubleBetween()
+{
+	CString target_min_str;
+	m_compare_min_value.GetWindowText(target_min_str);
+	double target_min_num = _wtof(target_min_str);
+
+	CString target_max_str;
+	m_compare_max_value.GetWindowText(target_max_str);
+	double target_max_num = _wtof(target_max_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		double num = (*item).double_num;
+		if (num >= target_min_num && num <= target_max_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 文本相等
+vector<LISTROWDATA> CMemToolDlg::textEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		CString text = (*item).text;
+		if (text == target_str)
+		{
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 文本包含
+vector<LISTROWDATA> CMemToolDlg::textContain()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		CString text = (*item).text;
+		if (text.Find(target_str, 0) != -1)
+		{
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 解密值相等
+vector<LISTROWDATA> CMemToolDlg::decryptEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	int target_num = _wtoi(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).decrypt_value;
+		if (num == target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 解密值大于
+vector<LISTROWDATA> CMemToolDlg::decryptGreaterThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	int target_num = _wtoi(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).decrypt_value;
+		if (num > target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 解密值小于
+vector<LISTROWDATA> CMemToolDlg::decryptLessThan()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	int target_num = _wtoi(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).decrypt_value;
+		if (num < target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 解密值不等于
+vector<LISTROWDATA> CMemToolDlg::decryptnotEqual()
+{
+	CString target_str;
+	m_compare_value.GetWindowText(target_str);
+	int target_num = _wtoi(target_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).decrypt_value;
+		if (num != target_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+// 解密值两者之间
+vector<LISTROWDATA> CMemToolDlg::decryptBetween()
+{
+	CString target_min_str;
+	m_compare_min_value.GetWindowText(target_min_str);
+	int target_min_num = _wtoi(target_min_str);
+
+	CString target_max_str;
+	m_compare_max_value.GetWindowText(target_max_str);
+	int target_max_num = _wtoi(target_max_str);
+
+	int row = 0;
+
+	vector<LISTROWDATA> tmp_list_data;
+	for (auto item = m_list_data.cbegin(); item != m_list_data.cend(); item++) {
+		int num = (*item).decrypt_value;
+		if (num >= target_min_num && num <= target_max_num) {
+			tmp_list_data.push_back(*item);
+			// 插入当前行数据
+			insertRowData(
+				row,
+				(*item).addr_str,
+				(*item).pointer_str,
+				(*item).int_str,
+				(*item).int64_str,
+				(*item).float_str,
+				(*item).double_str,
+				(*item).text,
+				(*item).decrypt_value_str
+			);
+			updateFilterCount(row + 1);
+			row++;
+		}
+		if (m_need_stop_filter) {
+			break;
+		}
+		handleEvents();
+	}
+
+	return tmp_list_data;
+}
+
+void CMemToolDlg::showBetweenValue(bool show)
+{
+	if (show) {
+		m_compare_value.ShowWindow(false);
+		m_compare_min_value.ShowWindow(true);
+		m_compare_max_value.ShowWindow(true);
+	}
+	else {
+		m_compare_value.ShowWindow(true);
+		m_compare_min_value.ShowWindow(false);
+		m_compare_max_value.ShowWindow(false);
+	}
+}
+
+void CMemToolDlg::updateFilterCount(int count)
+{
+	CString str;
+	str.Format(L"%d条", count);
+	m_filter_result.SetWindowText(str);
 }
