@@ -101,10 +101,10 @@ void asSystemRunning()
 
 void asDNFUserRunning()
 {
-	int dnf_pid = getProcessPID(L"DNF.exe");
+	int dnf_pid = getProcessPID(L"DFO.exe");
 	if (dnf_pid == 0)
 	{
-		AfxMessageBox(L"DNFÎ´Æô¶¯");
+		AfxMessageBox(L"DFOÎ´Æô¶¯");
 		ExitProcess(0);
 	}
 

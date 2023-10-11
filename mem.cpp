@@ -5,24 +5,18 @@ DWORD PID;
 
 using namespace std;
 
-// 读int类型
-//int readInt(__int64 address)
-//{
-//	HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
-//	if (handle == NULL)
-//	{
-//		return -1;
-//	}
-//
-//	int value;
-//	if (ReadProcessMemory(handle, (void*)address, &value, 4, NULL))
-//	{
-//		return value;
-//	}
-//
-//	CloseHandle(handle);
-//	return -1;
-//}
+// 解密原型
+//int decrypt_base = 0x1F2A015C4BFA2B1C
+//int result = readLong(pointer);
+//result = result ^ decrypt_base;
+//result = resualt - 8;
+//return result;
+
+// 加密原型
+//int encrypt_base = 0x1F2A015C4BFA2B1C;
+//value = value + 8
+//value = value ^ encrypt_base;
+//writeLong(pointer, value);
 
 int readInt(HANDLE handle, __int64 address)
 {
@@ -32,6 +26,22 @@ int readInt(HANDLE handle, __int64 address)
 		return value;
 	}
 	return -1;
+}
+
+int decrypt(HANDLE handle, __int64 address) 
+{
+	__int64 decrypt_param = 0x1F2A015C4BFA2B1C;
+	//__int64 value = readLong(handle,address);
+	__int64 value = address;
+
+	//if (value == -1) {
+	//	return -1;
+	//}
+
+	value = value ^ decrypt_param;
+	value = value - 8;
+
+	return (int)value;
 }
 
 // 写入int数据

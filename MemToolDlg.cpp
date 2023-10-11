@@ -379,10 +379,10 @@ void CMemToolDlg::OnBnClickedButton1()
 {
 	__int64 start_time = CTime::GetCurrentTime().GetTime();
 	// 开始遍历
-	int pid = getProcessPID(L"DNF.exe");
+	int pid = getProcessPID(L"DFO.exe");
 	if (pid == 0)
 	{
-		AfxMessageBox(L"DNF未启动");
+		AfxMessageBox(L"DFO未启动");
 		return;
 	}
 
@@ -1400,7 +1400,7 @@ LISTROWDATA CMemToolDlg::readRowDataByMap(HANDLE handle, __int64 address, __int6
 		tmp_row_data.text = tmp_str;
 
 		// 解密整型
-		int tmp_res = readInt(handle, tmp_pointer);
+		int tmp_res = decrypt(handle, tmp_pointer);
 		CString res;
 		res.Format(L"%d", tmp_res);
 		tmp_row_data.decrypt_value = tmp_res;

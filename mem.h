@@ -9,6 +9,8 @@ using namespace std;
 
 int readInt(HANDLE handle, __int64 address);
 
+int decrypt(HANDLE handle, __int64 address);
+
 bool writeInt(__int64 address, __int64 value);
 
 __int64 readLong(HANDLE handle, __int64 address);
