@@ -30,16 +30,18 @@ int readInt(HANDLE handle, __int64 address)
 
 int decrypt(HANDLE handle, __int64 address) 
 {
-	__int64 decrypt_param = 0x1F2A015C4BFA2B1C;
+	//__int64 decrypt_param = 0x1F2A015C4BFA2B1C;
+	__int64 decrypt_param = 0x1F2A025C;
 	//__int64 value = readLong(handle,address);
 	__int64 value = address;
 
-	//if (value == -1) {
-	//	return -1;
-	//}
+	if (value == -1) {
+		return -1;
+	}
 
 	value = value ^ decrypt_param;
-	value = value - 8;
+	//value = value - 8;
+	value = value - 4;
 
 	return (int)value;
 }

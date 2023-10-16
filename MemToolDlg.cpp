@@ -1401,6 +1401,7 @@ LISTROWDATA CMemToolDlg::readRowDataByMap(HANDLE handle, __int64 address, __int6
 
 		// 解密整型
 		int tmp_res = decrypt(handle, tmp_pointer);
+		//int tmp_res = decrypt(handle, address);
 		CString res;
 		res.Format(L"%d", tmp_res);
 		tmp_row_data.decrypt_value = tmp_res;
