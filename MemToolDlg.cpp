@@ -99,6 +99,17 @@ BEGIN_MESSAGE_MAP(CMemToolDlg, CDialogEx)
 	ON_CBN_SELCHANGE(IDC_COMBO6, &CMemToolDlg::OnCbnSelchangeCombo6)
 	ON_BN_CLICKED(IDC_BUTTON3, &CMemToolDlg::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON4, &CMemToolDlg::OnBnClickedButton4)
+	ON_EN_CHANGE(IDC_EDIT5, &CMemToolDlg::OnEnChangeEdit5)
+	ON_EN_CHANGE(IDC_EDIT2, &CMemToolDlg::OnEnChangeEdit2)
+	ON_EN_CHANGE(IDC_EDIT3, &CMemToolDlg::OnEnChangeEdit3)
+	ON_EN_CHANGE(IDC_EDIT4, &CMemToolDlg::OnEnChangeEdit4)
+	ON_EN_CHANGE(IDC_EDIT6, &CMemToolDlg::OnEnChangeEdit6)
+	ON_EN_CHANGE(IDC_EDIT7, &CMemToolDlg::OnEnChangeEdit7)
+	ON_EN_CHANGE(IDC_EDIT8, &CMemToolDlg::OnEnChangeEdit8)
+	ON_EN_CHANGE(IDC_EDIT9, &CMemToolDlg::OnEnChangeEdit9)
+	ON_EN_CHANGE(IDC_EDIT10, &CMemToolDlg::OnEnChangeEdit10)
+	ON_EN_CHANGE(IDC_EDIT11, &CMemToolDlg::OnEnChangeEdit11)
+	ON_EN_CHANGE(IDC_EDIT12, &CMemToolDlg::OnEnChangeEdit12)
 END_MESSAGE_MAP()
 
 
@@ -426,22 +437,45 @@ void CMemToolDlg::OnBnClickedButton1()
 	m_filter_btn.EnableWindow(false);
 
 	int list_index = 0;
+
+	__int64 tmp_pointer = 0;
+
 	// 一层循环
 	if (m_loop1_checked) {
 		for (int loop1_index = 0; loop1_index < m_loop1_num; loop1_index++)
 		{
 			// 二层循环
 			if (m_loop2_checked) {
-				for (int loop2_index = 0; loop2_index < m_loop2_num; loop2_index++) {
+				// 检测一级遍历指针是否为0
+				if (checkLevel1Pointer(handle)) {
+					goto level1Inc;
+				}
+				for (int loop2_index = 0; loop2_index < m_loop2_num; loop2_index++) 
+				{
 					// 三层循环
 					if (m_loop3_checked) {
-						for (int loop3_index = 0; loop3_index < m_loop3_num; loop3_index++) {
+						// 检测二级遍历指针是否为0
+						if (checkLevel2Pointer(handle)) {
+							
+						}
+						for (int loop3_index = 0; loop3_index < m_loop3_num; loop3_index++) 
+						{
 							if (m_loop4_checked) {
-								for (int loop4_index = 0; loop4_index < m_loop4_num; loop4_index++) {
+								// 检测三级遍历指针是否为0
+								if (checkLevel3Pointer(handle)) {
+									
+								}
+								for (int loop4_index = 0; loop4_index < m_loop4_num; loop4_index++) 
+								{
 									if (m_loop5_checked) {
-										for (int loop5_index = 0; loop5_index < m_loop5_num; loop5_index++) {
+										// 检测四级遍历指针是否为0
+										if (checkLevel4Pointer(handle)) {
+											
+										}
+										for (int loop5_index = 0; loop5_index < m_loop5_num; loop5_index++) 
+										{
 											// 计算当前循环索引
-											rowData(handle, list_index);
+											 rowData(handle, list_index);
 											// 更新搜索进度
 											updateSearchPos(list_index, m_loop1_num * m_loop2_num * m_loop3_num * m_loop4_num * m_loop5_num);
 											// 停止搜索
@@ -452,6 +486,8 @@ void CMemToolDlg::OnBnClickedButton1()
 											list_index++;
 											handleEvents();
 										}
+										// 偏移数值重置
+										*m_loop5_inc_item = getLevel5Offset();
 									}
 									else {
 										// 计算当前循环索引
@@ -466,8 +502,9 @@ void CMemToolDlg::OnBnClickedButton1()
 									}
 									*m_loop4_inc_item += m_inc4_num;
 									list_index++;
-
 								}
+								// 偏移数值重置
+								*m_loop4_inc_item = getLevel4Offset();
 							}
 							else {
 								// 计算当前循环索引
@@ -482,8 +519,9 @@ void CMemToolDlg::OnBnClickedButton1()
 							}
 							*m_loop3_inc_item += m_inc3_num;
 							list_index++;
-
 						}
+						// 偏移数值重置
+						*m_loop3_inc_item = getLevel3Offset();
 					}
 					else {
 						// 计算当前循环索引
@@ -499,6 +537,8 @@ void CMemToolDlg::OnBnClickedButton1()
 					*m_loop2_inc_item += m_inc2_num;
 					list_index++;
 				}
+				// 偏移数值重置
+				*m_loop2_inc_item = getLevel2Offset();
 			}
 			else {
 				// 读取一层循环的地址数据
@@ -511,8 +551,10 @@ void CMemToolDlg::OnBnClickedButton1()
 				}
 				handleEvents();
 			}
+			level1Inc:
 			// 一级遍历递增
 			*m_loop1_inc_item += m_inc1_num;
+			m_offset1_numeric = *m_loop1_inc_item;
 			list_index++;
 		}
 	}
@@ -1367,10 +1409,10 @@ LISTROWDATA CMemToolDlg::readRowDataByMap(HANDLE handle, __int64 address, __int6
 
 		// 获取整数
 		//int tmp_int = readInt(handle, cur_address);
-		int tmp_int = (int)(tmp_pointer >> 32);
+		int temp_int_num = readInt(handle,address);
 		CString int_str;
-		int_str.Format(L"%d", tmp_int);
-		tmp_row_data.int_num = tmp_int;
+		int_str.Format(L"%d", temp_int_num);
+		tmp_row_data.int_num = temp_int_num;
 		tmp_row_data.int_str = int_str;
 
 		// 获取长整数
@@ -1381,7 +1423,7 @@ LISTROWDATA CMemToolDlg::readRowDataByMap(HANDLE handle, __int64 address, __int6
 
 		// 获取小数
 		//float tmp_float = readFloat(handle, cur_address);
-		float tmp_float = (float)tmp_int;
+		float tmp_float = (float)temp_int_num;
 		CString float_str;
 		float_str.Format(L"%G", tmp_float);
 		tmp_row_data.float_num = tmp_float;
@@ -1400,8 +1442,7 @@ LISTROWDATA CMemToolDlg::readRowDataByMap(HANDLE handle, __int64 address, __int6
 		tmp_row_data.text = tmp_str;
 
 		// 解密整型
-		int tmp_res = decrypt(handle, tmp_pointer);
-		//int tmp_res = decrypt(handle, address);
+		int tmp_res = decrypt(handle, temp_int_num);
 		CString res;
 		res.Format(L"%d", tmp_res);
 		tmp_row_data.decrypt_value = tmp_res;
@@ -2786,4 +2827,432 @@ void CMemToolDlg::updateFilterCount(int count)
 	CString str;
 	str.Format(L"%d条", count);
 	m_filter_result.SetWindowText(str);
+}
+
+__int64 CMemToolDlg::getLevel1Offset()
+{
+	int index = m_combo1.GetCurSel();
+	return getOffsetCtrNum(index);
+}
+
+__int64 CMemToolDlg::getLevel2Offset()
+{
+	int index = m_combo2.GetCurSel();
+	return getOffsetCtrNum(index);
+}
+
+__int64 CMemToolDlg::getLevel3Offset()
+{
+	int index = m_combo3.GetCurSel();
+	return getOffsetCtrNum(index);
+}
+
+__int64 CMemToolDlg::getLevel4Offset()
+{
+	int index = m_combo4.GetCurSel();
+	return getOffsetCtrNum(index);
+}
+
+__int64 CMemToolDlg::getLevel5Offset()
+{
+	int index = m_combo5.GetCurSel();
+	return getOffsetCtrNum(index);
+}
+
+__int64 CMemToolDlg::getOffsetCtrNum(int index)
+{
+	__int64 result = 0;
+	CString address_str;
+
+	switch (index)
+	{
+	case 10:
+	{
+		m_offset10.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 9:
+	{
+		m_offset9.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 8:
+	{
+		m_offset8.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 7:
+	{
+		m_offset7.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 6:
+	{
+		m_offset6.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 5:
+	{
+		m_offset5.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 4:
+	{
+		m_offset4.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 3:
+	{
+		m_offset3.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 2:
+	{
+		m_offset2.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 1:
+	{
+		m_offset1.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	case 0:
+	{
+		m_base_addr.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+	}
+	break;
+	default:
+		m_base_addr.GetWindowText(address_str);
+		result = wcstoull(address_str, NULL, 16);
+		break;
+	}
+	return result;
+}
+
+// 基址数值改变
+void CMemToolDlg::OnEnChangeEdit2()
+{
+	CString address_str;
+	m_base_addr.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_base_address_numeric = -1;
+	}
+
+	m_base_address_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 一级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit3()
+{
+	CString address_str;
+	m_offset1.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset1_numeric = -1;
+	}
+
+	m_offset1_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 二级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit4()
+{
+	CString address_str;
+	m_offset2.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset2_numeric = -1;
+	}
+
+	m_offset2_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 三级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit5()
+{
+	CString address_str;
+	m_offset3.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset3_numeric = -1;
+	}
+
+	m_offset3_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 四级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit6()
+{
+	CString address_str;
+	m_offset4.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset4_numeric = -1;
+	}
+
+	m_offset4_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 五级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit7()
+{
+	CString address_str;
+	m_offset5.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset5_numeric = -1;
+	}
+
+	m_offset5_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 六级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit8()
+{
+	CString address_str;
+	m_offset6.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset6_numeric = -1;
+	}
+
+	m_offset6_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 七级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit9()
+{
+	CString address_str;
+	m_offset7.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset7_numeric = -1;
+	}
+
+	m_offset7_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 八级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit10()
+{
+	CString address_str;
+	m_offset8.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset8_numeric = -1;
+	}
+
+	m_offset8_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 九级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit11()
+{
+	CString address_str;
+	m_offset9.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset9_numeric = -1;
+	}
+
+	m_offset9_numeric = wcstoull(address_str, NULL, 16);
+}
+
+// 十级偏移数值改变
+void CMemToolDlg::OnEnChangeEdit12()
+{
+	CString address_str;
+	m_offset10.GetWindowText(address_str);
+	if (address_str.IsEmpty()) {
+		m_offset10_numeric = -1;
+	}
+
+	m_offset10_numeric = wcstoull(address_str, NULL, 16);
+}
+
+bool CMemToolDlg::checkLevel1Pointer(HANDLE handle)
+{
+	int index = m_combo1.GetCurSel();
+
+	__int64 pointer = readPointerByLevel(handle, index);
+	
+	if (pointer == 0) {
+		return true;
+	}
+	return false;
+}
+
+bool CMemToolDlg::checkLevel2Pointer(HANDLE handle)
+{
+	int index = m_combo2.GetCurSel();
+
+	__int64 pointer = readPointerByLevel(handle, index);
+
+	if (pointer == 0) {
+		return true;
+	}
+	return false;
+}
+
+bool CMemToolDlg::checkLevel3Pointer(HANDLE handle)
+{
+	int index = m_combo3.GetCurSel();
+
+	__int64 pointer = readPointerByLevel(handle, index);
+
+	if (pointer == 0) {
+		return true;
+	}
+	return false;
+}
+
+bool CMemToolDlg::checkLevel4Pointer(HANDLE handle)
+{
+	int index = m_combo4.GetCurSel();
+
+	__int64 pointer = readPointerByLevel(handle, index);
+
+	if (pointer == 0) {
+		return true;
+	}
+	return false;
+}
+
+bool CMemToolDlg::checkLevel5Pointer(HANDLE handle)
+{
+	int index = m_combo5.GetCurSel();
+
+	__int64 pointer = readPointerByLevel(handle,index);
+
+	if (pointer == 0) {
+		return true;
+	}
+	return false;
+}
+
+__int64 CMemToolDlg::readPointerByLevel(HANDLE handle, int level)
+{
+	__int64 result = 0;
+	__int64 tmp_pointer = 0;
+	CString address_str;
+
+	switch (level)
+	{
+	case 10:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		__int64 offset2_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+		__int64 offset3_pointer = readLongByMap(handle, offset2_pointer + m_offset3_numeric);
+		__int64 offset4_pointer = readLongByMap(handle, offset3_pointer + m_offset4_numeric);
+		__int64 offset5_pointer = readLongByMap(handle, offset4_pointer + m_offset5_numeric);
+		__int64 offset6_pointer = readLongByMap(handle, offset5_pointer + m_offset6_numeric);
+		__int64 offset7_pointer = readLongByMap(handle, offset6_pointer + m_offset7_numeric);
+		__int64 offset8_pointer = readLongByMap(handle, offset7_pointer + m_offset8_numeric);
+		__int64 offset9_pointer = readLongByMap(handle, offset8_pointer + m_offset9_numeric);
+		tmp_pointer = readLongByMap(handle, offset9_pointer + m_offset10_numeric);
+	}
+	break;
+	case 9:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		__int64 offset2_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+		__int64 offset3_pointer = readLongByMap(handle, offset2_pointer + m_offset3_numeric);
+		__int64 offset4_pointer = readLongByMap(handle, offset3_pointer + m_offset4_numeric);
+		__int64 offset5_pointer = readLongByMap(handle, offset4_pointer + m_offset5_numeric);
+		__int64 offset6_pointer = readLongByMap(handle, offset5_pointer + m_offset6_numeric);
+		__int64 offset7_pointer = readLongByMap(handle, offset6_pointer + m_offset7_numeric);
+		__int64 offset8_pointer = readLongByMap(handle, offset7_pointer + m_offset8_numeric);
+		tmp_pointer = readLongByMap(handle, offset8_pointer + m_offset9_numeric);
+	}
+	break;
+	case 8:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		__int64 offset2_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+		__int64 offset3_pointer = readLongByMap(handle, offset2_pointer + m_offset3_numeric);
+		__int64 offset4_pointer = readLongByMap(handle, offset3_pointer + m_offset4_numeric);
+		__int64 offset5_pointer = readLongByMap(handle, offset4_pointer + m_offset5_numeric);
+		__int64 offset6_pointer = readLongByMap(handle, offset5_pointer + m_offset6_numeric);
+		__int64 offset7_pointer = readLongByMap(handle, offset6_pointer + m_offset7_numeric);
+		tmp_pointer = readLongByMap(handle, offset7_pointer + m_offset8_numeric);
+	}
+	break;
+	case 7:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		__int64 offset2_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+		__int64 offset3_pointer = readLongByMap(handle, offset2_pointer + m_offset3_numeric);
+		__int64 offset4_pointer = readLongByMap(handle, offset3_pointer + m_offset4_numeric);
+		__int64 offset5_pointer = readLongByMap(handle, offset4_pointer + m_offset5_numeric);
+		__int64 offset6_pointer = readLongByMap(handle, offset5_pointer + m_offset6_numeric);
+		tmp_pointer = readLongByMap(handle, offset6_pointer + m_offset7_numeric);
+	}
+	break;
+	case 6:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		__int64 offset2_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+		__int64 offset3_pointer = readLongByMap(handle, offset2_pointer + m_offset3_numeric);
+		__int64 offset4_pointer = readLongByMap(handle, offset3_pointer + m_offset4_numeric);
+		__int64 offset5_pointer = readLongByMap(handle, offset4_pointer + m_offset5_numeric);
+		tmp_pointer = readLongByMap(handle, offset5_pointer + m_offset6_numeric);
+	}
+	break;
+	case 5:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		__int64 offset2_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+		__int64 offset3_pointer = readLongByMap(handle, offset2_pointer + m_offset3_numeric);
+		__int64 offset4_pointer = readLongByMap(handle, offset3_pointer + m_offset4_numeric);
+		tmp_pointer = readLongByMap(handle, offset4_pointer + m_offset5_numeric);
+	}
+	break;
+	case 4:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		__int64 offset2_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+		__int64 offset3_pointer = readLongByMap(handle, offset2_pointer + m_offset3_numeric);
+		tmp_pointer = readLongByMap(handle, offset3_pointer + m_offset4_numeric);
+	}
+	break;
+	case 3:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		__int64 offset2_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+		tmp_pointer = readLongByMap(handle, offset2_pointer + m_offset3_numeric);
+	}
+	break;
+	case 2:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		__int64 offset1_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+		tmp_pointer = readLongByMap(handle, offset1_pointer + m_offset2_numeric);
+	}
+	break;
+	case 1:
+	{
+		__int64 base_pointer = readLongByMap(handle, m_base_address_numeric);
+		tmp_pointer = readLongByMap(handle, base_pointer + m_offset1_numeric);
+	}
+	break;
+	case 0:
+	{
+		tmp_pointer = readLongByMap(handle, m_base_address_numeric);
+	}
+	break;
+	default:
+		tmp_pointer = readLongByMap(handle, m_base_address_numeric);
+		break;
+	}
+	return tmp_pointer;
 }

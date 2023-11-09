@@ -9,7 +9,7 @@ using namespace std;
 
 int readInt(HANDLE handle, __int64 address);
 
-int decrypt(HANDLE handle, __int64 address);
+int decrypt(HANDLE handle, int address);
 
 bool writeInt(__int64 address, __int64 value);
 

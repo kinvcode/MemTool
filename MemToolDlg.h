@@ -183,7 +183,22 @@ public:
 	void showBetweenValue(bool show);
 	// 更新过滤结果数量
 	void updateFilterCount(int count);
-	// 实现
+	// 获取指定级别遍历的选项数值
+	__int64 getLevel1Offset();
+	__int64 getLevel2Offset();
+	__int64 getLevel3Offset();
+	__int64 getLevel4Offset();
+	__int64 getLevel5Offset();
+	// 获取第N级偏移数值
+	__int64 getOffsetCtrNum(int index);
+	// 检查一级遍历的指针是否为0
+	bool checkLevel1Pointer(HANDLE handle);
+	bool checkLevel2Pointer(HANDLE handle);
+	bool checkLevel3Pointer(HANDLE handle);
+	bool checkLevel4Pointer(HANDLE handle);
+	bool checkLevel5Pointer(HANDLE handle);
+	// 根据遍历级别读取指针
+	__int64 readPointerByLevel(HANDLE handle,int level);
 protected:
 	HICON m_hIcon;
 
@@ -254,4 +269,15 @@ public:
 	CEdit m_compare_value;
 	CEdit m_compare_min_value;
 	CEdit m_compare_max_value;
+	afx_msg void OnEnChangeEdit5();
+	afx_msg void OnEnChangeEdit2();
+	afx_msg void OnEnChangeEdit3();
+	afx_msg void OnEnChangeEdit4();
+	afx_msg void OnEnChangeEdit6();
+	afx_msg void OnEnChangeEdit7();
+	afx_msg void OnEnChangeEdit8();
+	afx_msg void OnEnChangeEdit9();
+	afx_msg void OnEnChangeEdit10();
+	afx_msg void OnEnChangeEdit11();
+	afx_msg void OnEnChangeEdit12();
 };
