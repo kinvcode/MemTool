@@ -22,6 +22,8 @@ struct LISTROWDATA {
 	CString text;		// 文本
 	int decrypt_value;	// 解密值
 	CString decrypt_value_str;	// 解密值字符串
+	float decrypt_float_value; // 解密浮点数
+	CString decrypt_float_value_str; // 解密浮点数字符串
 };
 
 // CMemToolDlg 对话框
@@ -94,7 +96,7 @@ public:
 	void initCheckBoxs();
 	void initComboxs();
 	// 插入一行数据
-	void insertRowData(int row, CString addr, CString pointer, CString int_str, CString long_str, CString float_str, CString double_str, CString str, CString res);
+	void insertRowData(int row, CString addr, CString pointer, CString int_str, CString long_str, CString float_str, CString double_str, CString str, CString decrypt_int, CString decrypt_float);
 	// 检查递增选项是否合法
 	bool checkIncSel(int cur);
 	// 根据递增索引获取数值

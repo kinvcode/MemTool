@@ -188,6 +188,7 @@ void CMemToolDlg::initListCtr()
 	m_list.InsertColumn(5, TEXT("双精度小数"), LVCFMT_CENTER, 150);
 	m_list.InsertColumn(6, TEXT("文本型-U"), LVCFMT_CENTER, 150);
 	m_list.InsertColumn(7, TEXT("解密-int"), LVCFMT_CENTER, 150);
+	m_list.InsertColumn(8, TEXT("解密-float"), LVCFMT_CENTER, 150);
 }
 
 void CMemToolDlg::initCheckBoxs()
@@ -447,31 +448,31 @@ void CMemToolDlg::OnBnClickedButton1()
 			// 二层循环
 			if (m_loop2_checked) {
 				// 检测一级遍历指针是否为0
-				if (checkLevel1Pointer(handle)) {
-					goto level1Inc;
-				}
+				//if (checkLevel1Pointer(handle)) {
+				//	goto level1Inc;
+				//}
 				for (int loop2_index = 0; loop2_index < m_loop2_num; loop2_index++) 
 				{
 					// 三层循环
 					if (m_loop3_checked) {
 						// 检测二级遍历指针是否为0
-						if (checkLevel2Pointer(handle)) {
-							
-						}
+						//if (checkLevel2Pointer(handle)) {
+						//	
+						//}
 						for (int loop3_index = 0; loop3_index < m_loop3_num; loop3_index++) 
 						{
 							if (m_loop4_checked) {
 								// 检测三级遍历指针是否为0
-								if (checkLevel3Pointer(handle)) {
-									
-								}
+								//if (checkLevel3Pointer(handle)) {
+								//	
+								//}
 								for (int loop4_index = 0; loop4_index < m_loop4_num; loop4_index++) 
 								{
 									if (m_loop5_checked) {
 										// 检测四级遍历指针是否为0
-										if (checkLevel4Pointer(handle)) {
-											
-										}
+										//if (checkLevel4Pointer(handle)) {
+										//	
+										//}
 										for (int loop5_index = 0; loop5_index < m_loop5_num; loop5_index++) 
 										{
 											// 计算当前循环索引
@@ -551,10 +552,8 @@ void CMemToolDlg::OnBnClickedButton1()
 				}
 				handleEvents();
 			}
-			level1Inc:
 			// 一级遍历递增
 			*m_loop1_inc_item += m_inc1_num;
-			m_offset1_numeric = *m_loop1_inc_item;
 			list_index++;
 		}
 	}
@@ -598,7 +597,8 @@ void CMemToolDlg::insertRowData(
 	CString float_str,
 	CString double_str,
 	CString str,
-	CString res
+	CString decrypt_int,
+	CString decrypt_float
 )
 {
 	m_list.InsertItem(row, addr);
@@ -608,7 +608,8 @@ void CMemToolDlg::insertRowData(
 	m_list.SetItemText(row, 4, float_str);
 	m_list.SetItemText(row, 5, double_str);
 	m_list.SetItemText(row, 6, str);
-	m_list.SetItemText(row, 7, res);
+	m_list.SetItemText(row, 7, decrypt_int);
+	m_list.SetItemText(row, 8, decrypt_float);
 }
 
 bool CMemToolDlg::checkIncSel(int cur)
@@ -938,7 +939,8 @@ void CMemToolDlg::rowData(HANDLE handle, int row)
 		tmp_row_data.float_str,
 		tmp_row_data.double_str,
 		tmp_row_data.text,
-		tmp_row_data.decrypt_value_str
+		tmp_row_data.decrypt_value_str,
+		tmp_row_data.decrypt_float_value_str
 	);
 }
 
@@ -1442,11 +1444,19 @@ LISTROWDATA CMemToolDlg::readRowDataByMap(HANDLE handle, __int64 address, __int6
 		tmp_row_data.text = tmp_str;
 
 		// 解密整型
-		int tmp_res = decrypt(handle, temp_int_num);
-		CString res;
-		res.Format(L"%d", tmp_res);
-		tmp_row_data.decrypt_value = tmp_res;
-		tmp_row_data.decrypt_value_str = res;
+		int decrypt_int_value = decrypt(handle, temp_int_num);
+		CString decrypt_int_value_str;
+		decrypt_int_value_str.Format(L"%d", decrypt_int_value);
+		tmp_row_data.decrypt_value = decrypt_int_value;
+		tmp_row_data.decrypt_value_str = decrypt_int_value_str;
+		
+		// 解密浮点数
+		float* p_float_value = (float*)(&decrypt_int_value);
+		CString decrypt_float_value_str;
+		decrypt_float_value_str.Format(L"%f", *p_float_value);
+		tmp_row_data.decrypt_float_value = *p_float_value;
+		tmp_row_data.decrypt_float_value_str = decrypt_float_value_str;
+
 		return tmp_row_data;
 	}
 }
@@ -1798,7 +1808,8 @@ vector<LISTROWDATA> CMemToolDlg::intEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -1836,7 +1847,8 @@ vector<LISTROWDATA> CMemToolDlg::intGreaterThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -1874,7 +1886,8 @@ vector<LISTROWDATA> CMemToolDlg::intLessThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -1912,7 +1925,8 @@ vector<LISTROWDATA> CMemToolDlg::intnotEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -1954,7 +1968,8 @@ vector<LISTROWDATA> CMemToolDlg::intBetween()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -1992,7 +2007,8 @@ vector<LISTROWDATA> CMemToolDlg::int64Equal()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2029,7 +2045,8 @@ vector<LISTROWDATA> CMemToolDlg::int64GreaterThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2066,7 +2083,8 @@ vector<LISTROWDATA> CMemToolDlg::int64LessThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2103,7 +2121,8 @@ vector<LISTROWDATA> CMemToolDlg::int64notEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2144,7 +2163,8 @@ vector<LISTROWDATA> CMemToolDlg::int64Between()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2182,7 +2202,8 @@ vector<LISTROWDATA> CMemToolDlg::floatEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2219,7 +2240,8 @@ vector<LISTROWDATA> CMemToolDlg::floatGreaterThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2256,7 +2278,8 @@ vector<LISTROWDATA> CMemToolDlg::floatLessThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2293,7 +2316,8 @@ vector<LISTROWDATA> CMemToolDlg::floatnotEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2334,7 +2358,8 @@ vector<LISTROWDATA> CMemToolDlg::floatBetween()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2372,7 +2397,8 @@ vector<LISTROWDATA> CMemToolDlg::doubleEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2409,7 +2435,8 @@ vector<LISTROWDATA> CMemToolDlg::doubleGreaterThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2446,7 +2473,8 @@ vector<LISTROWDATA> CMemToolDlg::doubleLessThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2483,7 +2511,8 @@ vector<LISTROWDATA> CMemToolDlg::doublenotEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2524,7 +2553,8 @@ vector<LISTROWDATA> CMemToolDlg::doubleBetween()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2562,7 +2592,8 @@ vector<LISTROWDATA> CMemToolDlg::textEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2600,7 +2631,8 @@ vector<LISTROWDATA> CMemToolDlg::textContain()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2638,7 +2670,8 @@ vector<LISTROWDATA> CMemToolDlg::decryptEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2676,7 +2709,8 @@ vector<LISTROWDATA> CMemToolDlg::decryptGreaterThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2714,7 +2748,8 @@ vector<LISTROWDATA> CMemToolDlg::decryptLessThan()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2752,7 +2787,8 @@ vector<LISTROWDATA> CMemToolDlg::decryptnotEqual()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
@@ -2794,7 +2830,8 @@ vector<LISTROWDATA> CMemToolDlg::decryptBetween()
 				(*item).float_str,
 				(*item).double_str,
 				(*item).text,
-				(*item).decrypt_value_str
+				(*item).decrypt_value_str,
+				(*item).decrypt_float_value_str
 			);
 			updateFilterCount(row + 1);
 			row++;
